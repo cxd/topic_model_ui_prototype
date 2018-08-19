@@ -16,7 +16,7 @@ source("components/term_topics_ui.R")
 source("components/term_ratios.R")
 source("components/label_topics.R")
 source("components/cluster_docs.R")
-
+source("components/interactive_cluster.R")
 
 # allow large files
 options(shiny.maxRequestSize=100*1024^2) 
@@ -31,7 +31,8 @@ ui <- fluidPage(
                 tabPanel("Compare Term Ratios", term_ratios_ui("termratios")),
                 tabPanel("Label Topics", label_topics_ui("assignlabels")),
                 tabPanel("Cluster Documents", cluster_docs_ui("cluster")),
-                tabPanel("Interactive Cluster Classification"),
+                tabPanel("Interactive Cluster Classification",
+                         example_cluster_docs_ui("examplecluster")),
                 tabPanel("Build Classifier"),
                 tabPanel("Interactive Classification")
   )
@@ -50,10 +51,7 @@ server <- function(input, output, session) {
   
   clusterResult <- callModule(cluster_docs_srv, "cluster", modelResult, labelledResult)
   
-  reactive({
-    print("test")
-    print(loadFileResult)
-  })
+  callModule(example_cluster_docs_srv, "examplecluster", modelResult, labelledResult, clusterResult)
   
 }
 

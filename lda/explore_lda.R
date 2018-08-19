@@ -175,3 +175,69 @@ boxPlotClusterSizes <- function(clusteredDocs) {
     ggtitle("Number of documents assigned to each topic")
   p
 }
+
+
+addUtteranceToTfIdf <- function(newUtterances=list(), dataSet, textSet) {
+  newDocId <- max(as.numeric(dataSet$docid)) + seq(from=1, to=length(newUtterances))
+  
+  newUtterance <- data.frame(docid=as.character(newDocId),
+                             text=newUtterances,
+                             stringsAsFactors = FALSE)
+  
+  newCorpus <- data.frame(docid=dataSet$docid,
+                          text=dataSet$text,
+                          stringsAsFactors = FALSE)
+  
+  newCorpus <- rbind(newCorpus, newUtterance)
+  
+  newTextSet <- newCorpus %>% 
+    unnest_tokens(word, text) %>%
+    anti_join(stop_words) %>%
+    count(docid, word, sort=TRUE) %>%
+    ungroup()
+  
+  # remove records from the newTextSet that did not exist in the original textSet
+  newTextSet <- newTextSet %>%
+    filter(word %in% unique(textSet$word))
+  
+  # build the tf_idf matrix
+  docMat <- newTextSet %>%
+    bind_tf_idf(word, docid, n)
+  
+  # create a matrix for the new document.
+  newDocTermMat <- newTextSet %>%
+    filter(docid == newDocId) %>%
+    cast_dtm(docid, word, n)
+  
+  list(newDocTermMat=newDocTermMat,
+       newRowIds=newDocId)
+}
+
+classifyNewTermMat <- function(newDocTermMat, newRowIds, ldaModel, numTopics) {
+  new_probs_doc_topic <- topicmodels::posterior(ldaModel, newDocTermMat)
+  newDocProbs <- as.data.frame(new_probs_doc_topic$topics)
+  newDocProbs$docid <- as.character(row.names(newDocProbs))
+  
+  newTopTopics <- data.frame(apply(new_probs_doc_topic$topics, 1, which.max))
+  newTopTopics$docid <- row.names(newTopTopics)
+  colnames(newTopTopics) <- c("topic", "docid")
+  
+  newRanks <- newDocProbs %>% 
+    gather(topic, probability, 1:numTopics) %>% 
+    arrange(-probability)
+  
+  newRanked <- inner_join(newTopTopics, newRanks, by=c("docid")) %>% 
+    filter(topic.x == topic.y)
+  
+  list(ranked=newRanked,
+       allTopicsRanked=newRanks)
+}
+
+classifyNewExamples <- function(newUtterances=list(), dataSet, textSet, ldaModel, numTopics) {
+  
+  termMatResult <- addUtteranceToTfIdf(newUtterances, dataSet, textSet)
+  classifyNewTermMat(termMatResult$newDocTermMat, 
+                     termMatResult$newRowIds, 
+                     ldaModel, 
+                     numTopics) 
+}
