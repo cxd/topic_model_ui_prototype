@@ -29,7 +29,7 @@ label_topics_srv <- function(input, output, session, topicModelResult=list()) {
     df <- data.frame(topic=1:numTopics,
                      label=rep("unknown", numTopics),
                      stringsAsFactors = FALSE)
-    if (!is.null(labelledResult$labelledTopics)) {
+    if (!is.null(labelledResult$labelledTopics) && numTopics == nrow(labelledResult$labelledTopics)) {
       df <- labelledResult$labelledTopics
     } else {
       labelledResult$labelledTopics <- df
