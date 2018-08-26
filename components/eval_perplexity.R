@@ -39,6 +39,14 @@ eval_perplexity_srv <- function(input, output, session, loadFileResult=list()) {
   
   inputDataSet <- reactive({
     validate(need(loadFileResult$result, message=FALSE))
+    
+    
+    if (!is.null(loadFileResult$result$dataSet)) {
+      dataSet <- loadFileResult$result$dataSet
+      modelResult$dataSet <- dataSet 
+      return(dataSet)
+    }
+    
     validate(need(loadFileResult$result$srcFile, message=FALSE))
     
     result <- loadFileResult$result

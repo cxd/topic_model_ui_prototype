@@ -5,29 +5,40 @@ source("components/term_topics_ui.R")
 load_file_ui <- function(id) {
   ns <- NS(id)
   verticalLayout(
-    fileInput(inputId=ns("sourceFile"),
-              label="Input Document CSV",
-              multiple=FALSE,
-              accept=c(
-                "text/csv",
-                "text/comma-separated-values,text/plain",
-                ".csv")
-              ),
-    selectInput(inputId=ns("textColSel"),
-                label="Text Column Name",
-                choices=c()),
-    selectInput(inputId=ns("labelColSel"),
-                label="Tag Label Column Name",
-                choices=c()),
-    checkboxInput(inputId=ns("hasLabels"),
-                  label="CSV Has Class Labels Column"),
-    selectInput(inputId=ns("docIdName"),
-                label="Doc Id Column Name",
-                choices=c()),
-    checkboxInput(inputId=ns("hasDocId"),
-                  label="Use Doc Id Column"),
-    actionButton(ns("readInDataBtn"), "Update Data"),
-    fluid=TRUE
+    inputPanel(
+      fileInput(inputId=ns("sourceFile"),
+                label="Input Document CSV",
+                multiple=FALSE,
+                accept=c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv")
+      ),
+      selectInput(inputId=ns("textColSel"),
+                  label="Text Column Name",
+                  choices=c()),
+      selectInput(inputId=ns("labelColSel"),
+                  label="Tag Label Column Name",
+                  choices=c()),
+      checkboxInput(inputId=ns("hasLabels"),
+                    label="CSV Has Class Labels Column"),
+      selectInput(inputId=ns("docIdName"),
+                  label="Doc Id Column Name",
+                  choices=c()),
+      checkboxInput(inputId=ns("hasDocId"),
+                    label="Use Doc Id Column"),
+      actionButton(ns("readInDataBtn"), "Update Data")  
+    ),
+    inputPanel(
+      fileInput(inputId=ns("sourceZipFile"),
+                label="Or Load Previous Model from zip file",
+                multiple=FALSE,
+                accept=c(
+                  "application/zip",
+                  "zip")),
+      actionButton(ns("readZip"), "Load Zip File")  
+    )
+    
   )
 }
 
@@ -79,6 +90,21 @@ load_file_srv <- function(input, output, session) {
     
     #print(loadFileResult$result)
     })
+  
+  observeEvent(input$readZip, {
+    validate(need(input$sourceZipFile, message="Cannot get zip file"))
+    
+    zipSrc <- input$sourceZipFile$datapath
+    
+    print(zipSrc)
+    
+    if (file.exists(zipSrc)) {
+      readResult <- importLDAModel(zipSrc)
+      loadFileResult$result$ldaModel <- readResult$ldaModel
+      loadFileResult$result$dataSet <- readResult$dataSet
+    }
+    
+  })
   
   return (loadFileResult)
 }

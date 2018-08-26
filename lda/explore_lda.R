@@ -311,7 +311,7 @@ importLDAModel <- function(zipInFile) {
     unlink(target)
   }
   dir.create(target)
-  unzip(zipInFile, exdir=target)
+  unzip(zipInFile, exdir=target,junkpaths=TRUE)
   modelFile <- paste(target,"ldamodel.RData",sep=part)
   dataSetFile <- paste(target, "dataSet.RData", sep=part)
   ldaModel <- readRDS(modelFile)

@@ -36,25 +36,32 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   
   inputDataSet <- reactive({
     validate(need(loadFileResult$result, message=FALSE))
-    validate(need(loadFileResult$result$srcFile, message=FALSE))
     
-    result <- loadFileResult$result
-    
-    data <- read.csv(result$srcFile, header=TRUE)
-    
-    dataSet <- if (result$hasDocIdCol) {
-      defineDataSet(data, 
-                    result$textColName, 
-                    result$labelColName, 
-                    result$docIdName, 
-                    genRowIds=FALSE)
-    } else {
-      defineDataSet(data, 
-                    result$textColName, 
-                    result$labelColName)
+    if (!is.null(loadFileResult$result$dataSet)) {
+      dataSet <- loadFileResult$result$dataSet
+      modelResult$dataSet <- dataSet 
+      return(dataSet)
     }
-    modelResult$dataSet <- dataSet 
-    return(dataSet)
+    
+    validate(need(loadFileResult$result$srcFile, message=FALSE))
+      
+      result <- loadFileResult$result
+      
+      data <- read.csv(result$srcFile, header=TRUE)
+      
+      dataSet <- if (result$hasDocIdCol) {
+        defineDataSet(data, 
+                      result$textColName, 
+                      result$labelColName, 
+                      result$docIdName, 
+                      genRowIds=FALSE)
+      } else {
+        defineDataSet(data, 
+                      result$textColName, 
+                      result$labelColName)
+      }
+      modelResult$dataSet <- dataSet 
+      return(dataSet)
   })
   
   textDataSet <- reactive({
@@ -72,6 +79,12 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   })
   
   ldaModel <- reactive({
+    
+    if (!is.null(loadFileResult$result$ldaModel)) {
+      modelResult$model <- loadFileResult$result$ldaModel
+      return (modelResult$model)
+    } 
+    
     model <- buildLDA(docTermMatrix(), input$numTopics)
     modelResult$model <- model
     
@@ -121,7 +134,6 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   
   rangeSelection <- reactive({
     validate(need(loadFileResult$result, message=FALSE))
-    validate(need(loadFileResult$result$srcFile, message=FALSE))
     validate(need(input$chooseTopic, message=FALSE))
     
     t <- input$chooseTopic
