@@ -16,7 +16,11 @@ term_topics_ui <- function(id) {
                    value=10),
       uiOutput(ns("chooseTopic"))
     ),
-    
+    inputPanel(
+      h6("Log Perplexity for N-Topics"),
+      textOutput(ns("logPerplexity"))
+    ),
+    h5("Review Top N Terms"),
     plotOutput(ns("topicPlot"), width="900px", height="1024px")
     
   )
@@ -69,8 +73,16 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   ldaModel <- reactive({
     model <- buildLDA(docTermMatrix(), input$numTopics)
     modelResult$model <- model
+    
     return (model)
   })
+  
+  calclogPerplexity <- reactive({
+    model <- ldaModel()
+    modelResult$logPerplexity <- log(perplexity(model))
+    return(modelResult$logPerplexity)
+    })
+  
   
   top_terms <- reactive({
     top <- topNTerms(ldaModel(), input$numTerms)
@@ -99,6 +111,7 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
      })
    }
    
+   
    selectInput(inputId=ns("chooseTopic"),
                                      label="Select Topic Range",
                                      choices=ranges)
@@ -114,6 +127,11 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
     
     range <- as.numeric(unlist(stringr::str_split(t, "\\.\\.")))
     return(range)
+  })
+  output$logPerplexity <- renderText({
+    validate(need(modelResult$model, message=FALSE))
+    ns <- session$ns
+    calclogPerplexity()
   })
   
   output$topicPlot <- renderPlot({

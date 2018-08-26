@@ -12,6 +12,7 @@ library(DT)
 
 
 source("components/load_file.R")
+source("components/eval_perplexity.R")
 source("components/term_topics_ui.R")
 source("components/term_ratios.R")
 source("components/label_topics.R")
@@ -27,6 +28,7 @@ ui <- fluidPage(
   mainPanel(
     tabsetPanel(type="tabs",
                 tabPanel("Configure Data", load_file_ui("load")),
+                tabPanel("Assess Number of Topics", eval_perplexity_ui("evalp")),
                 tabPanel("Explore Topics", term_topics_ui("terms")),
                 tabPanel("Compare Term Ratios", term_ratios_ui("termratios")),
                 tabPanel("Label Topics", label_topics_ui("assignlabels")),
@@ -42,6 +44,8 @@ theme="bootstrap.css")
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   loadFileResult <- callModule(load_file_srv, "load")
+  
+  callModule(eval_perplexity_srv, "evalp", loadFileResult)
   
   modelResult <- callModule(term_topics_observer, "terms", loadFileResult, "tabs", "Explore Topics")
   

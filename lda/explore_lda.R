@@ -40,6 +40,36 @@ makeDocumentTermMatrix <- function(textSet) {
   docTermMat
 }
 
+# for a range of number of topics, run lda and then calculate the model perplexity.
+# return a list containing the set of models
+# the set of perplexity scores for each model
+# the set of log perplexity scores for each model.
+assessModelPerplexity <- function(docTermMat, numTopicsRange) {
+  docLDA <- sapply(numTopicsRange, 
+                   function(kN) { 
+                     print(paste("Building model with",kN,"topics"))
+                     LDA(docTermMat, k=kN, control=list(seed=1234))
+                     })
+  perplexity1 <- sapply(docLDA, function(lda) {
+    perplexity(lda)
+  }) 
+  list(perplexity=perplexity1,
+       logPerplexity=log(perplexity1),
+       range=numTopicsRange,
+       models=docLDA)
+}
+# plot the perplexity
+plotPerplexity <- function(pDataResult) {
+  numTopics <- pDataResult$range
+  logP <- pDataResult$logPerplexity
+  pdata <- data.frame(topic=numTopics, logPerplexity=logP)
+  p <- ggplot(pdata, aes(x=topic,y=logPerplexity)) +
+    geom_line(stat="identity") +
+    geom_point() + 
+    ggtitle("Log Perplexity Per Number of Topic")
+  p
+}
+
 buildLDA <- function(docTermMat, numTopics) {
    # generate the LDA model
   docLDA <- LDA(docTermMat, k=numTopics, control=list(seed=1234))
