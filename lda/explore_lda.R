@@ -183,6 +183,7 @@ clusterDocuments <- function(dataSet, ldaModel, docTermMat, topicLabels) {
   
   data.frame(topic=tempData$topic,
              label=tempData$label,
+             docid=tempData$docid,
              text=tempData$text,
              probability=tempData$probability,
              stringsAsFactors = FALSE)
@@ -190,13 +191,14 @@ clusterDocuments <- function(dataSet, ldaModel, docTermMat, topicLabels) {
 
 ## get the sizes for the cluster
 getClusterSizes <- function(clusteredDocs) {
-  cluster_sizes <- clusteredDocs %>% group_by(topic,label) %>% count(topic,label)
+  cluster_sizes <- clusteredDocs %>% group_by(topic,label) %>% 
+    count(topic,label)
   cluster_sizes
 }
 
 boxPlotClusterSizes <- function(clusteredDocs) {
   cluster_sizes <- getClusterSizes(clusteredDocs)
-  ids <- as.character(cluster_sizes$topic)
+  ids <- cluster_sizes$topic
   labels <- cluster_sizes$label
   labels <- paste(ids,labels," ")
   
@@ -260,6 +262,11 @@ classifyNewTermMat <- function(newDocTermMat, newRowIds, ldaModel, numTopics) {
   
   newRanked <- inner_join(newTopTopics, newRanks, by=c("docid")) %>% 
     filter(topic.x == topic.y)
+  
+  newRanked$topic <- newRanked$topic.x
+  idx <- which(colnames(newRanked) == "topic.x" || colnames(newRanked) == "topic.y")
+  newRanked <- newRanked[,-idx]
+  
   
   list(ranked=newRanked,
        allTopicsRanked=newRanks)

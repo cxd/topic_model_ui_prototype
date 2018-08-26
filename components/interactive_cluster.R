@@ -44,7 +44,7 @@ example_cluster_docs_srv <- function(input, output, session, topicModelResult=li
   })
   
   labelledDocs <- reactive({
-    validate(clusterResult$labelledDocs, message=FALSE)
+    validate(need(clusterResult$labelledDocs, message=FALSE))
     return(clusterResult$labelledDocs)
   })
   
@@ -56,7 +56,10 @@ example_cluster_docs_srv <- function(input, output, session, topicModelResult=li
   classifyResult <- reactiveValues()
   
   observeEvent(input$classifyExample, {
-    validate(input$enterExample, message=FALSE)
+    
+    print(input$enterExample)
+    
+    validate(need(input$enterExample, message=FALSE))
     
     print("event received")
     
@@ -75,17 +78,37 @@ example_cluster_docs_srv <- function(input, output, session, topicModelResult=li
     print(example)
    
     results <- classifyNewExamples(c(example), 
-                                   labelledDocs, 
+                                   labelledDocs(), 
                                    textSet, 
                                    model, 
                                    numTopics)
     
-    classifyResult$ranked <- results$ranked
-    classifyResult$allTopicsRanked <- results$allTopicsRanked
+    topicLabels <- labelledTopics()
+    
+    ranked <- results$ranked
+    ranked$topic <- as.numeric(ranked$topic)
+    ranked <- inner_join(ranked, topicLabels, by="topic") %>%
+      arrange(-probability)
+    
+    allTopicsRanked <- results$allTopicsRanked
+    allTopicsRanked$topic <- as.numeric(allTopicsRanked$topic)
+    allTopicsRanked <- inner_join(allTopicsRanked, topicLabels, by="topic") %>%
+      arrange(-probability)
+    
+    classifyResult$ranked <- ranked
+    classifyResult$allTopicsRanked <- allTopicsRanked
     })
   
   output$exampleOutput <- renderDataTable({
-    validate(classifyResult$ranked, message=FALSE)
-    classifyResult$ranked
+    validate(need(classifyResult$ranked, message=FALSE))
+    classifyResult$allTopicsRanked
+  })
+  
+  output$relatedDocs <- renderDataTable({
+    validate(need(classifyResult$ranked, message=FALSE))
+    data <- labelledDocs()
+    r <- classifyResult$ranked$topic
+    data <- data[data$topic == r,]
+    data
   })
 }
