@@ -46,6 +46,8 @@ buildLDA <- function(docTermMat, numTopics) {
   docLDA
 }
 
+
+
 topNTerms <- function(ldaModel, topN) {
   
   docTopics <- tidy(ldaModel, matrix="beta")
