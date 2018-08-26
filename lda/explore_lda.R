@@ -62,8 +62,8 @@ assessModelPerplexity <- function(docTermMat, numTopicsRange) {
 plotPerplexity <- function(pDataResult) {
   numTopics <- pDataResult$range
   logP <- pDataResult$logPerplexity
-  pdata <- data.frame(topic=numTopics, logPerplexity=logP)
-  p <- ggplot(pdata, aes(x=topic,y=logPerplexity)) +
+  pdata <- data.frame(topicCount=numTopics, logPerplexity=logP)
+  p <- ggplot(pdata, aes(x=topicCount,y=logPerplexity)) +
     geom_line(stat="identity") +
     geom_point() + 
     ggtitle("Log Perplexity Per Number of Topic")
@@ -279,4 +279,47 @@ classifyNewExamples <- function(newUtterances=list(), dataSet, textSet, ldaModel
                      termMatResult$newRowIds, 
                      ldaModel, 
                      numTopics) 
+}
+
+## Write an lda model to a file
+exportLDAModel <- function(targetZipFile, dataSet, ldaModel) {
+  part <- .Platform$file.sep
+  temp <- tempdir()
+  folder <- paste0("lda_export_temp_",as.numeric(Sys.time()))
+  target <- paste(temp, folder, sep=part)
+  if (dir.exists(target)) {
+    unlink(target)
+  }
+  print(target)
+  dir.create(target)
+  modelFile <- paste(target,"ldamodel.RData",sep=part)
+  dataSetFile <- paste(target, "dataSet.RData", sep=part)
+  saveRDS(ldaModel, modelFile)
+  saveRDS(dataSet, dataSetFile)
+  zipOut <- zip(targetZipFile, c(modelFile, dataSetFile))
+  unlink(target)
+  zipOut
+}
+
+## Import an LDA model that has been unzipped.
+importLDAModel <- function(zipInFile) {
+  part <- .Platform$file.sep
+  temp <- tempdir()
+  folder <- paste0("lda_export_temp_",as.numeric(Sys.time()))
+  target <- paste(temp, folder, sep=part)
+  if (dir.exists(target)) {
+    unlink(target)
+  }
+  dir.create(target)
+  unzip(zipInFile, exdir=target)
+  modelFile <- paste(target,"ldamodel.RData",sep=part)
+  dataSetFile <- paste(target, "dataSet.RData", sep=part)
+  ldaModel <- readRDS(modelFile)
+  dataSet <- readRDS(dataSetFile)
+  result <- list(
+    ldaModel=ldaModel,
+    dataSet=dataSet
+  )
+  unlink(target)
+  result
 }

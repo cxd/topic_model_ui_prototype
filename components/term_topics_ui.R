@@ -20,6 +20,7 @@ term_topics_ui <- function(id) {
       h6("Log Perplexity for N-Topics"),
       textOutput(ns("logPerplexity"))
     ),
+    downloadButton(ns("downloadModel"), label="Download LDA Model"),
     h5("Review Top N Terms"),
     plotOutput(ns("topicPlot"), width="900px", height="1024px")
     
@@ -149,6 +150,18 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
     range <- seq(from=selectedRange[1], to=selectedRange[2])
     plotNTermsInTopicRange(top, range)
   })
+  
+  output$downloadModel <- downloadHandler(
+    filename=function() {
+      folder <- paste0("lda_export_temp_",as.numeric(Sys.time()),".zip")
+      folder
+    },
+    content=function(targetFile) {
+    dataSet <- inputDataSet()  
+    ldaModel <- modelResult$model
+    exportLDAModel(targetFile, dataSet, ldaModel)
+  },
+  contentType="application/zip")
   
   return (modelResult)
   

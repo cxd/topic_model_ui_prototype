@@ -22,7 +22,9 @@ eval_perplexity_ui <- function(id) {
       
       numericInput(ns("stepSize"), 
                    "Step Size", 
-                   value=10, min=2)
+                   value=10, min=2),
+      
+      actionButton(ns("runAssessment"), "Run Assessment")
     ),
     h5("Evaluation Result"),
     plotOutput(ns("logPerplexityPlot"), width="800px", height="600px"),
@@ -84,24 +86,35 @@ eval_perplexity_srv <- function(input, output, session, loadFileResult=list()) {
     return(pData)
   })
   
+  reactBtn <- eventReactive(input$runAssessment, {
+    print("Eval perplexity")
+    return (evalPerplexityData())
+    })
+  
   output$logPerplexityPlot <- renderPlot({
+    pData <- NA
     startN <- input$startNumTopics
     endN <- input$endNumTopics
     step <- input$stepSize
+    
+    
     range <- seq(from=startN, to=endN, by=step)
     totalSteps <- length(range)
+    
     withProgress(message=paste("Running Evaluation of", totalSteps, "steps"),
                  {
                    incProgress()
-                   evalPerplexityData()
+                   pData <- reactBtn()  
                    setProgress(1)
-                 }
-    )
-    pData <- evalPerplexityData()
+                 })
+    
+   
     plotPerplexity(pData)
   })
+  
   output$logPerlexityTable <- renderDataTable({
-    pData <- evalPerplexityData()
+    pData <- NA
+    pData <- reactBtn()
     data.frame(topicCount=pData$range,
                perplexity=pData$perplexity,
                logPerplexity=pData$logPerplexity)
