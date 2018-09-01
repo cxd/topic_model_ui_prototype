@@ -16,7 +16,14 @@ term_ratios_ui <- function(id) {
 
 term_ratios_srv <- function(input, output, session, topicModelResult=list()) {
   
+  
+  
+  
   getNumTopics <- reactive({
+    
+    print(paste("numTopics", topicModelResult$numTopics))
+    print(paste("numTerms", topicModelResult$numTerms))
+    
     validate(need(topicModelResult$numTopics, message=FALSE))
     return(topicModelResult$numTopics)
   })

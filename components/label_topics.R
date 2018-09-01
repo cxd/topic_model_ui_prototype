@@ -23,16 +23,55 @@ label_topics_srv <- function(input, output, session, topicModelResult=list()) {
     return(topicModelResult$numTopics)
   })
   
+  getNumTerms <- reactive({
+    validate(need(topicModelResult$numTerms, message=FALSE))
+    return(topicModelResult$numTerms)
+  })
+  
+  inputDataSet <- reactive({
+    validate(need(topicModelResult$dataSet, message=FALSE))
+    return(topicModelResult$dataSet)
+  })
+  
+  ldaModel <- reactive({
+    validate(need(topicModelResult$model, message=FALSE))
+    return(topicModelResult$model)
+  })
+  
+  termDocMat <- reactive({
+    validate(need(topicModelResult$termMat, message=FALSE))
+    return(topicModelResult$termMat)
+  })
+  
+  getClusteredDocs <- reactive({
+    dataSet <- inputDataSet()
+    model <- ldaModel()
+    docMat <- termDocMat()
+    numTopics <- getNumTopics()
+    topics <- data.frame(topic=1:numTopics,
+                     label=rep("unknown", numTopics),
+                     stringsAsFactors = FALSE)
+    labelledResult$clusteredDocs <- clusterDocuments(dataSet, model, docMat, topics) 
+    labelledResult$clusteredDocs
+    })
+  
+  getSuggestions <- reactive({
+    numTopics <- getNumTopics()
+    topics <- data.frame(topic=1:numTopics,
+                     label=rep("unknown", numTopics),
+                     stringsAsFactors = FALSE)
+    suggestions <- suggestLabels(ldaModel(), getNumTerms(), getClusteredDocs(), topics)
+    suggestions
+  })
   
   output$topicTable <- renderDT({
     numTopics <- getNumTopics()
-    df <- data.frame(topic=1:numTopics,
-                     label=rep("unknown", numTopics),
-                     stringsAsFactors = FALSE)
+    df <- data.frame()
     if (!is.null(labelledResult$labelledTopics) && numTopics == nrow(labelledResult$labelledTopics)) {
       df <- labelledResult$labelledTopics
     } else {
-      labelledResult$labelledTopics <- df
+      labelledResult$labelledTopics <- getSuggestions()
+      df <- labelledResult$labelledTopics
     }
     df
   }, selection="none", 

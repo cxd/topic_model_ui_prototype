@@ -196,6 +196,7 @@ getClusterSizes <- function(clusteredDocs) {
   cluster_sizes
 }
 
+# plot cluster sizes
 boxPlotClusterSizes <- function(clusteredDocs) {
   cluster_sizes <- getClusterSizes(clusteredDocs)
   ids <- cluster_sizes$topic
@@ -210,6 +211,32 @@ boxPlotClusterSizes <- function(clusteredDocs) {
   p
 }
 
+suggestLabels <- function(ldaModel, numTerms, labelledDocs, topics) {
+  
+  #
+  top <- topNTerms(ldaModel, numTerms)
+  
+  # now for each cluster we need to identify the top bigrams
+  bigrams <- labelledDocs %>%
+    unnest_tokens(bigram, text, token="ngrams", n=2) %>%
+    count(bigram, topic, sort=TRUE)
+  
+  ## select the top terms in each topic
+  max_top <- top %>% group_by(topic) %>% filter(beta == max(beta))
+  
+  max_bigrams <- bigrams[startsWith(bigrams$bigram, top$term),]
+  max_bigrams <- inner_join(top, max_bigrams, by="topic")
+  
+  max_bigrams <- max_bigrams[startsWith(max_bigrams$bigram, max_bigrams$term),]
+  
+  max_bigrams <- max_bigrams %>% group_by(topic) %>% filter(beta == max(beta))
+  
+  suggestions <- max_bigrams %>% group_by(topic) %>% summarise(suggestions=paste(bigram,collapse=","))
+  
+  topics <- inner_join(topics, suggestions, by="topic")
+  
+  topics 
+}
 
 addUtteranceToTfIdf <- function(newUtterances=list(), dataSet, textSet) {
   newDocId <- max(as.numeric(dataSet$docid)) + seq(from=1, to=length(newUtterances))
@@ -284,7 +311,7 @@ classifyNewExamples <- function(newUtterances=list(), dataSet, textSet, ldaModel
 ## Write an lda model to a file
 
 
-exportLDAModel <- function(targetZipFile, dataSet, ldaModel, textData, termMat) {
+exportLDAModel <- function(targetZipFile, dataSet, ldaModel, textData, termMat, metaData) {
   part <- .Platform$file.sep
   temp <- tempdir()
   folder <- paste0("lda_export_temp_",as.numeric(Sys.time()))
@@ -298,11 +325,13 @@ exportLDAModel <- function(targetZipFile, dataSet, ldaModel, textData, termMat) 
   dataSetFile <- paste(target, "dataSet.RData", sep=part)
   textDataFile <- paste(target, "textSet.RData", sep=part)
   termMatFile <- paste(target, "termMat.RData", sep=part)
+  metaDataFile <- paste(target, "metaData.RData", sep=part)
   saveRDS(ldaModel, modelFile)
   saveRDS(dataSet, dataSetFile)
   saveRDS(textData, textDataFile)
   saveRDS(termMat, termMatFile)
-  zipOut <- zip(targetZipFile, c(modelFile, dataSetFile, textDataFile, termMatFile))
+  saveRDS(metaData, metaDataFile)
+  zipOut <- zip(targetZipFile, c(modelFile, dataSetFile, textDataFile, termMatFile, metaDataFile))
   unlink(target)
   zipOut
 }
@@ -322,12 +351,13 @@ importLDAModel <- function(zipInFile) {
   dataSetFile <- paste(target, "dataSet.RData", sep=part)
   textDataFile <- paste(target, "textSet.RData", sep=part)
   termMatFile <- paste(target, "termMat.RData", sep=part)
+  metaDataFile <- paste(target, "metaData.RData", sep=part)
   
   ldaModel <- readRDS(modelFile)
   dataSet <- readRDS(dataSetFile)
   textData <- readRDS(textDataFile)
   termMat <- readRDS(termMatFile)
-  
+  metaData <- readRDS(metaDataFile)
   #modelResult$textData <- loadFileResult$result$textData
   #modelResult$termMat <- loadFileResult$result$termMat
   
@@ -335,7 +365,8 @@ importLDAModel <- function(zipInFile) {
     ldaModel=ldaModel,
     dataSet=dataSet,
     textData=textData,
-    termMat=termMat
+    termMat=termMat,
+    metaData=metaData
   )
   unlink(target)
   result

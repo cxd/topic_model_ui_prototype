@@ -102,6 +102,9 @@ load_file_srv <- function(input, output, session) {
       readResult <- importLDAModel(zipSrc)
       loadFileResult$result$ldaModel <- readResult$ldaModel
       loadFileResult$result$dataSet <- readResult$dataSet
+      loadFileResult$result$metaData <- readResult$metaData
+      loadFileResult$result$textData <- readResult$textData
+      loadFileResult$result$termMat <- readResult$termMat
     }
     
   })

@@ -79,14 +79,25 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   })
   
   ldaModel <- reactive({
+    ns <- session$ns
     
     if (!is.null(loadFileResult$result$ldaModel)) {
       modelResult$model <- loadFileResult$result$ldaModel
       
       modelResult$textData <- loadFileResult$result$textData
       modelResult$termMat <- loadFileResult$result$termMat
+      modelResult$numTopics <- loadFileResult$result$metaData$numTopics
+      updateNumericInput(session, ns("numTopics"), value=modelResult$numTopics)
       
-      return (modelResult$model)
+      if (!is.null(modelResult$hasChanged) && modelResult$hasChanged == FALSE) {
+        modelResult$numTerms <- input$numTerms
+        
+        return (modelResult$model)
+      } else if (is.null(modelResult$hasChanged)) {
+        return (modelResult$model)
+      }
+      
+      
     } 
     
     model <- buildLDA(docTermMatrix(), input$numTopics)
@@ -103,8 +114,16 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   
   
   top_terms <- reactive({
+    
+    
+    if (!is.null(modelResult$numTerms) && modelResult$numTerms != input$numTerms) {
+      modelResult$hasChanged <- TRUE
+    }
+    
+    
     top <- topNTerms(ldaModel(), input$numTerms)
     modelResult$topTerms <- top
+    
     modelResult$numTerms <- input$numTerms
     return(top)
     })
@@ -177,8 +196,9 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
     ldaModel <- modelResult$model
     textData <- modelResult$textData
     termMat <- modelResult$termMat
+    metaData <- list(numTopics=modelResult$numTopics)
     
-    exportLDAModel(targetFile, dataSet, ldaModel, textData, termMat)
+    exportLDAModel(targetFile, dataSet, ldaModel, textData, termMat, metaData)
   },
   contentType="application/zip")
   
