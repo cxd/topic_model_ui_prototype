@@ -82,6 +82,10 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
     
     if (!is.null(loadFileResult$result$ldaModel)) {
       modelResult$model <- loadFileResult$result$ldaModel
+      
+      modelResult$textData <- loadFileResult$result$textData
+      modelResult$termMat <- loadFileResult$result$termMat
+      
       return (modelResult$model)
     } 
     
@@ -171,7 +175,10 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
     content=function(targetFile) {
     dataSet <- inputDataSet()  
     ldaModel <- modelResult$model
-    exportLDAModel(targetFile, dataSet, ldaModel)
+    textData <- modelResult$textData
+    termMat <- modelResult$termMat
+    
+    exportLDAModel(targetFile, dataSet, ldaModel, textData, termMat)
   },
   contentType="application/zip")
   

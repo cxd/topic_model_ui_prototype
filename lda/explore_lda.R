@@ -282,7 +282,9 @@ classifyNewExamples <- function(newUtterances=list(), dataSet, textSet, ldaModel
 }
 
 ## Write an lda model to a file
-exportLDAModel <- function(targetZipFile, dataSet, ldaModel) {
+
+
+exportLDAModel <- function(targetZipFile, dataSet, ldaModel, textData, termMat) {
   part <- .Platform$file.sep
   temp <- tempdir()
   folder <- paste0("lda_export_temp_",as.numeric(Sys.time()))
@@ -294,9 +296,13 @@ exportLDAModel <- function(targetZipFile, dataSet, ldaModel) {
   dir.create(target)
   modelFile <- paste(target,"ldamodel.RData",sep=part)
   dataSetFile <- paste(target, "dataSet.RData", sep=part)
+  textDataFile <- paste(target, "textSet.RData", sep=part)
+  termMatFile <- paste(target, "termMat.RData", sep=part)
   saveRDS(ldaModel, modelFile)
   saveRDS(dataSet, dataSetFile)
-  zipOut <- zip(targetZipFile, c(modelFile, dataSetFile))
+  saveRDS(textData, textDataFile)
+  saveRDS(termMat, termMatFile)
+  zipOut <- zip(targetZipFile, c(modelFile, dataSetFile, textDataFile, termMatFile))
   unlink(target)
   zipOut
 }
@@ -314,11 +320,22 @@ importLDAModel <- function(zipInFile) {
   unzip(zipInFile, exdir=target,junkpaths=TRUE)
   modelFile <- paste(target,"ldamodel.RData",sep=part)
   dataSetFile <- paste(target, "dataSet.RData", sep=part)
+  textDataFile <- paste(target, "textSet.RData", sep=part)
+  termMatFile <- paste(target, "termMat.RData", sep=part)
+  
   ldaModel <- readRDS(modelFile)
   dataSet <- readRDS(dataSetFile)
+  textData <- readRDS(textDataFile)
+  termMat <- readRDS(termMatFile)
+  
+  #modelResult$textData <- loadFileResult$result$textData
+  #modelResult$termMat <- loadFileResult$result$termMat
+  
   result <- list(
     ldaModel=ldaModel,
-    dataSet=dataSet
+    dataSet=dataSet,
+    textData=textData,
+    termMat=termMat
   )
   unlink(target)
   result
