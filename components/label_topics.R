@@ -8,7 +8,24 @@ label_topics_ui <- function(id) {
     p("Enter labels summarising each of the topics in the table below."),
     DTOutput(ns("topicTable")),
     
-    actionButton(ns("labelBtn"), "Save Labels")
+    inputPanel(
+      actionButton(ns("labelBtn"), "Save Labels"),
+      
+      downloadButton(ns("exportBtn"), "Export Labels")
+    ),
+    
+    inputPanel(
+      
+      
+      fileInput(inputId=ns("sourceLabelFile"),
+                label="Or Load Previous Labels",
+                multiple=FALSE,
+                accept=c(
+                  "application/csv",
+                  "csv")),
+      
+      actionButton(ns("loadLabelBtn"), "Load Selected File")
+    )
   ) 
 }
 
@@ -101,6 +118,28 @@ label_topics_srv <- function(input, output, session, topicModelResult=list()) {
         replaceData(proxy, tmpDf, resetPaging=FALSE, rownames=FALSE)
       }
      
+  })
+  
+  output$exportBtn <- downloadHandler(
+    filename=function() {
+      folder <- paste0("labels_export_",as.numeric(Sys.time()),".csv")
+      folder
+    },
+    content=function(targetFile) {
+      labels <- labelledResult$labelledTopics
+      
+      write.csv(labels,targetFile, row.names=FALSE)
+    },
+    contentType="application/csv")
+  
+  observeEvent(input$loadLabelBtn, {
+    validate(need(input$sourceLabelFile, message=FALSE))
+    temp <- read.csv(input$sourceLabelFile$datapath, header=TRUE)
+    numTopics <- getNumTopics()
+    if (nrow(temp) == numTopics) {
+      labelledResult$labelledTopics <- temp
+      replaceData(proxy, temp, resetPaging=FALSE, rownames=FALSE)
+    }
   })
   
   return(labelledResult)

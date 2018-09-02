@@ -218,20 +218,34 @@ suggestLabels <- function(ldaModel, numTerms, labelledDocs, topics) {
   
   # now for each cluster we need to identify the top bigrams
   bigrams <- labelledDocs %>%
-    unnest_tokens(bigram, text, token="ngrams", n=2) %>%
+    unnest_tokens(bigram, text, token="ngrams", n=3) %>%
     count(bigram, topic, sort=TRUE)
   
   ## select the top terms in each topic
   max_top <- top %>% group_by(topic) %>% filter(beta == max(beta))
   
-  max_bigrams <- bigrams[startsWith(bigrams$bigram, top$term),]
+  
+  
+  beginsWithTopTerm <- function(item) {
+    idx <- which(startsWith(item, max_top$term))
+    len <- length(idx)
+    len > 0
+  }
+  
+  max_bigrams <- bigrams %>% filter(beginsWithTopTerm(bigram))
+  
   max_bigrams <- inner_join(top, max_bigrams, by="topic")
   
   max_bigrams <- max_bigrams[startsWith(max_bigrams$bigram, max_bigrams$term),]
   
-  max_bigrams <- max_bigrams %>% group_by(topic) %>% filter(beta == max(beta))
+  max_bigrams <- max_bigrams %>% group_by(topic) %>% 
+    filter(beta == max(beta)) %>%
+    filter(n == max(n)) %>%
+    arrange(-beta)
   
-  suggestions <- max_bigrams %>% group_by(topic) %>% summarise(suggestions=paste(bigram,collapse=","))
+  suggestions <- max_bigrams %>% 
+    group_by(topic) %>% 
+    summarise(suggestions=paste(bigram,collapse=","))
   
   topics <- inner_join(topics, suggestions, by="topic")
   
