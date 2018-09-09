@@ -285,6 +285,7 @@ addUtteranceToTfIdf <- function(newUtterances=list(), dataSet, textSet) {
     cast_dtm(docid, word, n)
   
   list(newDocTermMat=newDocTermMat,
+       newDocMat=docMat,
        newRowIds=newDocId)
 }
 
