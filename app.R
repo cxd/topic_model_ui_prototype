@@ -18,6 +18,7 @@ source("components/term_ratios.R")
 source("components/label_topics.R")
 source("components/cluster_docs.R")
 source("components/interactive_cluster.R")
+source("components/train_dnn_model.R")
 
 # allow large files
 options(shiny.maxRequestSize=100*1024^2) 
@@ -35,7 +36,8 @@ ui <- fluidPage(
                 tabPanel("Cluster Documents", cluster_docs_ui("cluster")),
                 tabPanel("Interactive Cluster Classification",
                          example_cluster_docs_ui("examplecluster")),
-                tabPanel("Build Classifier"),
+                tabPanel("Build Classifier",
+                         train_model_ui("trainDNN")),
                 tabPanel("Interactive Classification")
   )
 ),
@@ -56,6 +58,8 @@ server <- function(input, output, session) {
   clusterResult <- callModule(cluster_docs_srv, "cluster", modelResult, labelledResult)
   
   callModule(example_cluster_docs_srv, "examplecluster", modelResult, labelledResult, clusterResult)
+  
+  trainResult <- callModule(train_model_srv, "trainDNN", loadFileResult, modelResult, labelledResult, clusterResult)
   
 }
 

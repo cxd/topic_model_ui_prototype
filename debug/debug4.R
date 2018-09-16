@@ -22,19 +22,29 @@ docTermMat <- textData %>%
 
 labelName <- "appTag"
 
+
+## Step 1. Define partitions for training and testing.
+## Report sizes.
 modelData <- makeModelDataSet(dataSet, docTermMat, labelName, splits=c(0.6, 0.15, 0.25))
 
 names(modelData)
 
 trainData <- getTrainAndTestSet(modelData)
 
+## Step 2. Define the model architecture.
 model <- makeModelArchitectureAndCompile(modelData$nFeatures, modelData$nClasses, dropOut=TRUE, dropRate=0.2)
 
 
-
-history <- trainModel(model, trainData$train_x, trainData$train_y, 
-                      trainData$val_x, trainData$val_y, numEpochs=150, logdir="logs/run", 
-                      withTensorBoard=TRUE, port=5000)
+## Step 3. Train the model.
+history <- trainModel(model, 
+                      trainData$train_x, 
+                      trainData$train_y, 
+                      trainData$val_x, 
+                      trainData$val_y, 
+                      numEpochs=150, 
+                      logdir="logs/run", 
+                      withTensorBoard=TRUE, 
+                      port=5000)
 
 plot(history)
 
@@ -42,6 +52,7 @@ trainingHistory(history)
 
 validationHistory(history)
 
+## Step 4. Evaluate the model.
 test <- evaluateModel(model,
     trainData$test_x,
     trainData$test_y
@@ -55,7 +66,8 @@ head(pred)
 
 summary(model)
 
-d1 <- classifyNewExamplesDnn(newUtterances=c("nsw police start wearing bright uniforms"), 
+## Step 5. Interactive examples.
+d1 <- classifyNewExamplesDnnTfIdf(newUtterances=c("nsw police start wearing bright uniforms"), 
                        dataSet, 
                        textData, 
                        model, 
@@ -64,5 +76,19 @@ d1 <- classifyNewExamplesDnn(newUtterances=c("nsw police start wearing bright un
                        labelName)
 
 d1
+
+## Example using one hot encoding to approximate classification
+maxDocId <- nrow(dataSet)
+d2 <- classifyNewExamplesDnnOneHot(newUtterances=c("nsw police start wearing bright uniforms"), 
+                             model,
+                             maxDocId,
+                             modelData$termVocab,
+                             modelData$classColNames,
+                             labelName)
+
+d2
+
+## Step 6. Save model.
+
 
   

@@ -332,7 +332,7 @@ exportLDAModel <- function(targetZipFile, dataSet, ldaModel, textData, termMat, 
   folder <- paste0("lda_export_temp_",as.numeric(Sys.time()))
   target <- paste(temp, folder, sep=part)
   if (dir.exists(target)) {
-    unlink(target)
+    unlink(target, recursive=TRUE)
   }
   print(target)
   dir.create(target)
