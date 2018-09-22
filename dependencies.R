@@ -34,7 +34,9 @@ deps <- c("devtools",
           "topicmodels",
           "servr",
           "DT",
-          "ldatuning")
+          "ldatuning",
+          "ggiraph",
+          "futures")
 
 install_dependencies (deps)
 

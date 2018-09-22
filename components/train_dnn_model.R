@@ -1,6 +1,8 @@
 source("lda/explore_lda.R")
 source("dnn/model_dnn.R")
-require(metricsgraphics)
+require(ggplot2)
+require(ggiraph)
+require(future)
 
 train_model_ui <- function(id) {
   ns <- NS(id)
@@ -34,11 +36,6 @@ train_model_ui <- function(id) {
     ),
     
     h3("Training results"),
-    
-    metricsgraphicsOutput(ns("historyTraining"), width="900px", height="370px"),
-    
-    metricsgraphicsOutput(ns("historyValidation"), width="900px", height="370px"),
-    
     
     plotOutput(ns("historyPlot"), width="900px", height="700px"),
     
@@ -90,6 +87,7 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
                                        val_loss <- logs[["val_loss"]]
                                        self$valLoss <- c(self$valLoss, c(val_loss))
                                     
+                                       print(paste(self$epochs))
                                      }
                                    ))
   
@@ -178,7 +176,6 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
   
   
   observeEvent(input$trainBtn, {
-    
     ## R break function
     ## browser()
     
@@ -238,26 +235,9 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
             trainData$test_y)
     
     trainResult$testResults <- test
-    
   })
   
-  output$historyTraining <- renderMetricsgraphics({
-    validate(need(trainHistory(), message=FALSE))
-    invalidateLater(1000, session)
-    trainHistory() %>% mjs_plot(x=epoch, y=trainAccuracy) %>%
-      mjs_line() %>%
-      mjs_add_line(valAccuracy) %>%
-      mjs_add_legend(legend=c("Train Acc", "Val Acc"))
-  })
-  
-  output$historyValidation <- renderMetricsgraphics({
-    validate(need(trainHistory(), message=FALSE))
-    invalidateLater(1000, session)
-    trainHistory() %>% mjs_plot(x=epoch, y=trainLoss) %>%
-      mjs_line() %>%
-      mjs_add_line(valLoss) %>%
-      mjs_add_legend(legend=c("Train Loss", "Val Loss"))
-  })
+ 
   
   output$historyPlot <- renderPlot({
     validate(need(trainResult$history, message=FALSE))
