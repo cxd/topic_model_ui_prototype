@@ -1,7 +1,7 @@
 source("lda/explore_lda.R")
 source("dnn/model_dnn.R")
 
-zipSrc <- "/Users/cd/Projects/RStudio/topic_model_tools/data/abc_news/test_example.csv"
+zipSrc <- "/Users/cd/Projects/RStudio/topic_model_tools/data/abc_news/export_10_clusters.csv"
 
 data <- read.csv(zipSrc,header=TRUE)
 
@@ -20,12 +20,12 @@ docMat <- makeDocumentTermMatrix(textData)
 docTermMat <- textData %>%
   bind_tf_idf(word, docid, n)
 
-labelName <- "appTag"
+labelName <- "label"
 
 
 ## Step 1. Define partitions for training and testing.
 ## Report sizes.
-modelData <- makeModelDataSet(dataSet, docTermMat, labelName, splits=c(0.6, 0.15, 0.25))
+modelData <- makeModelDataSet(data, docTermMat, labelName, splits=c(0.7, 0.15, 0.15))
 
 names(modelData)
 

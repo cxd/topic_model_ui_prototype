@@ -38,6 +38,10 @@ deps <- c("devtools",
 
 install_dependencies (deps)
 
+devtools::install_github("hrbrmstr/metricsgraphics")
+
+devtools::install_github("rstudio/crosstalk")
+
 ##devtools::install_github("bwlewis/rthreejs")
 
 #devtools::install_github("cpsievert/LDAvisData")

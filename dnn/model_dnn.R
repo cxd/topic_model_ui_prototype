@@ -77,10 +77,10 @@ makeModelDataSet <- function(labelledDataSet, docTermMat, labelName, splits=c(0.
   
   print(length(testData[,labelName]))
   
-  valIndex <- createDataPartition(testData[,labelName], p=valPercent, list=FALSE, times=1)
+  # make validation data by drawing from all data.
+  valIndex <- createDataPartition(combinedData[,labelName], p=valPercent, list=FALSE, times=1)
   
-  valData <- testData[valIndex,]
-  testData <- testData[-valIndex,]
+  valData <- combinedData[valIndex,]
   
   trainProps <- trainData %>% group_by(trainData[,labelName]) %>% count()
   colnames(trainProps) <- c(labelName,"n")
@@ -163,8 +163,14 @@ getTrainAndTestSet <- function(modelData) {
 
 ## train the model and return the history
 ## The history can be plotted.
-trainModel <- function(model, train_x, train_y, val_x, val_y, numEpochs=50, logdir="logs/run", withTensorBoard=TRUE, port=5000) {
+trainModel <- function(model, train_x, train_y, val_x, val_y, numEpochs=50, logdir="logs/run", withTensorBoard=TRUE, port=5000, callbackSet=list()) {
   unlink(logdir, recursive=TRUE)
+  
+  if (length(callbackSet) > 0) {
+    callbackSet <- c(list(callback_tensorboard(logdir)), callbackSet)
+  } else {
+    callbackSet <- list(callback_tensorboard(logdir))
+  }
   
   if (withTensorBoard == TRUE) {
     
@@ -176,7 +182,7 @@ trainModel <- function(model, train_x, train_y, val_x, val_y, numEpochs=50, logd
       epochs = numEpochs,
       validation_data = list(as.matrix(val_x), as.matrix(val_y)),
       
-      callbacks = callback_tensorboard(logdir)
+      callbacks = callbackSet
     )
     return (history)
   } else {
