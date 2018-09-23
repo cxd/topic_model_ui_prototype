@@ -203,5 +203,4 @@ term_topics_observer <- function(input, output, session, loadFileResult=list(), 
   contentType="application/zip")
   
   return (modelResult)
-  
 }
