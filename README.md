@@ -1,5 +1,22 @@
 # Explore Topics Prototype
 
+
+The intention of this prototype is to investigate the assembly of a number of public domain techniques in the area of topic analysis for text corpus within a pipeline of text analysis that occurs after the corpus of text has been collected. This consists of
+
+1. A discovery process - assisted by an unsupervised modelling technique for document topic discovery.
+2. A review and curation process - where the user manually reviews metrics for each of the terms and clusters and assigns class labels to clusters.
+3. A supervised modelling process - where the user is able to build a classification model derived from the curated data sets defined during the process.
+
+The methods applied in this process are provided by work provided within the public domain, these methods are
+
+- TFIDF document term feature encoding. Provided by the "tidytext" library.
+- Latent Dirichlet Allocation. Provided by the "topicmodels" library.
+- A feed forward neural network. Provided by the "keras" package for R using a tensorflow backend.
+
+The process overview can be described as follows.
+
+
+
 A prototype UI combining a number of techniques to explore topics from within a corpus of short text examples. This leverages the tidyr tools available within R
 to provide a simple workflow of
 
@@ -20,6 +37,8 @@ to provide a simple workflow of
 8. Train supervised classifier to label document examples against the generated topics. 
 
 9. Interactively enter new examples to review the topics assigned by the supervised classifier.
+
+
 
 ## Loading Data
 

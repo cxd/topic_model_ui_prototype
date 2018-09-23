@@ -36,7 +36,8 @@ deps <- c("devtools",
           "DT",
           "ldatuning",
           "ggiraph",
-          "futures")
+          "futures",
+          "magrittr")
 
 install_dependencies (deps)
 

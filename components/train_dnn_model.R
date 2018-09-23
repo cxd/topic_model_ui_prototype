@@ -2,7 +2,7 @@ source("lda/explore_lda.R")
 source("dnn/model_dnn.R")
 require(ggplot2)
 require(ggiraph)
-require(future)
+require(magrittr)
 
 train_model_ui <- function(id) {
   ns <- NS(id)
@@ -178,7 +178,6 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
   observeEvent(input$trainBtn, {
     ## R break function
     ## browser()
-    
     trainP <- input$trainPartition
     validP <- input$testPartition/2.0
     testP <- input$testPartition/2.0
@@ -188,6 +187,15 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
     docTermMat <- inputDocTermMat()
     
     labelledData <- inputLabelledData()
+    listenPort <- input$listenPort
+    epochs <- input$epochs
+    unlink("logs/run", recursive = TRUE)
+    
+    aggregator$reset()
+    
+    runTraining <- function() {
+    
+    result <- list()
     
     print(paste("Make data for training", trainP, validP, testP))
     
@@ -195,13 +203,13 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
     ## Report sizes.
     modelData <- makeModelDataSet(labelledData, docTermMat, labelName, splits=c(trainP, validP, testP))
     
-    trainResult$modelData <- modelData
-    trainResult$docTermMat <- docTermMat
-    trainResult$labelName <- labelName
+    result$modelData <- modelData
+    result$docTermMat <- docTermMat
+    result$labelName <- labelName
     
     trainData <- getTrainAndTestSet(modelData)
     
-    trainResult$trainData <- trainData
+    result$trainData <- trainData
     
     print("Make model architecture")
     ## Step 2. Define the model architecture.
@@ -210,31 +218,54 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
                                              dropOut=TRUE, 
                                              dropRate=0.2)
     
-    unlink("logs/run", recursive = TRUE)
+  
+    result$model <- model
+    
+    result$modelfile <- saveModelHDF5(model)
     
     print("Train model")
     ## Step 3. Train the model.
     
-    aggregator$reset()
     
     history <- trainModel(model, 
                           trainData$train_x, 
                           trainData$train_y, 
                           trainData$val_x, 
                           trainData$val_y, 
-                          numEpochs=input$epochs, 
+                          numEpochs=epochs, 
                           logdir="logs/run", 
                           withTensorBoard=TRUE, 
-                          port=input$listenPort,
+                          port=listenPort,
                           callbackSet=list(aggregator))
     
-    trainResult$history <- history
+    result$history <- history
     
     test <- evaluateModel(model,
             trainData$test_x,
             trainData$test_y)
     
-    trainResult$testResults <- test
+    result$testResults <- test
+    
+    return (result)
+    }
+    
+    assignResult <- function(result) {
+      trainResult$model <- result$model
+      trainResult$modelfile <- result$modelfile
+      trainResult$modelData <- result$modelData
+      trainResult$docTermMat <- result$docTermMat
+      trainResult$labelName <- result$labelName
+      trainResult$trainData <- result$trainData
+      trainResult$history <- result$history
+      trainResult$testResults <- result$testResults
+      trainResult
+    }
+    withProgress(message="Building Model", {
+      incProgress()
+      runTraining() %>%
+        assignResult()
+      setProgress(1)
+    })
   })
   
  

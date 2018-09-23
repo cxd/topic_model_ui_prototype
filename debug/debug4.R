@@ -34,6 +34,7 @@ trainData <- getTrainAndTestSet(modelData)
 ## Step 2. Define the model architecture.
 model <- makeModelArchitectureAndCompile(modelData$nFeatures, modelData$nClasses, dropOut=TRUE, dropRate=0.2)
 
+unlink("logs/run", recursive=TRUE)
 
 ## Step 3. Train the model.
 history <- trainModel(model, 
@@ -89,6 +90,10 @@ d2 <- classifyNewExamplesDnnOneHot(newUtterances=c("nsw police start wearing bri
 d2
 
 ## Step 6. Save model.
+tempFile <-  paste0("dnn_export_temp_",as.numeric(Sys.time()),".zip")
+exportModel(tempFile, model, trainData)
 
+tempFile2 <-  paste0("dnn_export_temp2_",as.numeric(Sys.time()),".zip")
+exportToModelDirectory(tempFile2, model, trainData)
 
   

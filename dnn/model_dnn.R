@@ -317,6 +317,28 @@ classifyNewExamplesDnnOneHot <- function(newUtterances=list(), model, maxDocId, 
   
 }
 
+## Save the model to a hdf5 file and return the path of the file.
+saveModelHDF5 <- function(model) {
+  part <- .Platform$file.sep
+  temp <- tempdir()
+  folder <- paste0("dnn_export_temp_",as.numeric(Sys.time()))
+  target <- paste(temp, folder, sep=part)
+  if (dir.exists(target)) {
+    unlink(target)
+  }
+  dir.create(target)
+  
+  modeltarget <- paste(target, "exported_model.hdf5", sep=part)
+  save_model_hdf5(model, modeltarget, include_optimizer = TRUE)
+  modeltarget
+}
+
+## load the model from a hdf5 path.
+loadModelHDF5 <- function(hdf5path) {
+  model <- load_model_hdf5(hdf5path)
+  model
+}
+
 ## export the model to zip file.
 ## The model is stored in hdf5 format which will save all weights and details of optimizer
 ## This will allow the model to be retrained at a later stage.
