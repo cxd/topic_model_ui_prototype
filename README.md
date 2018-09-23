@@ -129,7 +129,7 @@ The suggestions column is produced through the top most frequent trigrams associ
 
 ![Save Labels](docs/images/save_labels.png)
 
-## Cluster DOcuments
+## Cluster Documents
 
 Once the labels have been assigned to each topic, the original data set may be clustered and each individual document is assigned a corresponding label against the topic that has the maxmimum probability given the document. This can serve as a method of exploring the document set further.
 
