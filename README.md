@@ -72,7 +72,7 @@ The data is expected in a CSV format containing headers. Documents are expected 
 The format for example is to have at least one column containing text, an optional column for document ids as well as optional columns for any existing labels. The columns in the csv would be defined as below for example:
 
 ```
-  docid                                             text appTag
+  docid                                             text label
 1     1  police confused over police chase lingo coroner topic1
 2     2                      us open course hole by hole topic6
 3     3 from royal performance to royal resort for title topic4
@@ -163,7 +163,7 @@ Once the training is complete the model training history for training and valida
 
 ![Train Model History](docs/images/train_nn02.png)
 
-The model is also evaluated against the test set partition (the percentage for the partition sizes is defined at the top of the screen). The test outcome is presented at the bottom of the page below the training results.
+The model is also evaluated against the test set partition (the percentage for the partition sizes is defined at the top of the screen). The test outcome is presented at the bottom of the page below the training results. Note also the tensorflow ui is started on the port specified in the options at the top of the page.
 
 ![Train Results](docs/images/train_nn03.png)
 
