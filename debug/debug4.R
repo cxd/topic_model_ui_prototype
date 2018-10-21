@@ -3,8 +3,8 @@ source("dnn/model_dnn.R")
 
 zipSrc <- "/Users/cd/Projects/RStudio/topic_model_tools/data/abc_news/export_10_clusters.csv"
 
-data <- read.csv(zipSrc,header=TRUE)
-
+labelledData <- read.csv(zipSrc,header=TRUE)
+data <- labelledData
 
 textColName <- "text"
 labelColName <- "label"
@@ -25,7 +25,7 @@ labelName <- "label"
 
 ## Step 1. Define partitions for training and testing.
 ## Report sizes.
-modelData <- makeModelDataSet(data, docTermMat, labelName, splits=c(0.7, 0.15, 0.15))
+modelData <- makeModelDataSet(dataSet, labelledData, docTermMat, labelName, splits=c(0.7, 0.15, 0.15))
 
 names(modelData)
 
@@ -61,7 +61,7 @@ test <- evaluateModel(model,
 
 test
 
-pred <- testPredictions(model, trainData$test_x, modelData$classColNames, modelData$testData, labelName)
+pred <- testPredictions(model, trainData$test_x, modelData$classColNames, modelData$testData, labelName, dataSet)
 
 head(pred)
 

@@ -8,7 +8,7 @@ library(keras)
 ## Test training set defaults to 60%
 ## validation defaults to 15%
 ## test defaults to 25%
-makeModelDataSet <- function(labelledDataSet, docTermMat, labelName, splits=c(0.6, 0.15, 0.25)) {
+makeModelDataSet <- function(dataSet, labelledDataSet, docTermMat, labelName, splits=c(0.6, 0.15, 0.25)) {
   temp <- as.data.frame(docTermMat)
   docDataFrame <- reshape2::dcast(temp, docid ~ word, value.var="tf_idf", fill=0.0)
   
@@ -215,7 +215,7 @@ evaluateModel <- function(model, test_x, test_y) {
   test
 }
 
-testPredictions <- function(model, test_x, classColNames, testData, labelName) {
+testPredictions <- function(model, test_x, classColNames, testData, labelName, dataSet) {
   predictions <- model %>% predict(test_x)
   
   preddf <- as.data.frame(predictions)
