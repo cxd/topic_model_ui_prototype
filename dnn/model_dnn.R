@@ -8,7 +8,12 @@ library(keras)
 ## Test training set defaults to 60%
 ## validation defaults to 15%
 ## test defaults to 25%
-makeModelDataSet <- function(dataSet, labelledDataSet, docTermMat, labelName, splits=c(0.6, 0.15, 0.25)) {
+##
+## the resulting partition will have the name "clusterlabel" assigned to the labelName column.
+makeModelDataSet <- function(labelledDataSet, docTermMat, labelName, splits=c(0.6, 0.15, 0.25)) {
+  
+  labelledDataSet$clusterlabel <- labelledDataSet[,labelName]
+  
   temp <- as.data.frame(docTermMat)
   docDataFrame <- reshape2::dcast(temp, docid ~ word, value.var="tf_idf", fill=0.0)
   
@@ -48,9 +53,12 @@ makeModelDataSet <- function(dataSet, labelledDataSet, docTermMat, labelName, sp
   
   textIdx <- which(colnames(labelledDataSet) %in% "text")
   
-  combinedData <- inner_join(combinedData, dataSet[,-textIdx], by="docid")
+  copyData <- labelledDataSet
+  copyData$docid <- as.character(copyData$docid)
   
-  appTagIdx <- which(colnames(combinedData) == labelName)
+  combinedData <- inner_join(combinedData, copyData[,-textIdx], by="docid")
+  
+  appTagIdx <- which(colnames(combinedData) == "clusterlabel")
   
   # only keep complete cases.
   combinedData <- combinedData[complete.cases(combinedData),]
@@ -61,7 +69,7 @@ makeModelDataSet <- function(dataSet, labelledDataSet, docTermMat, labelName, sp
   testPercent <- splits[3]
   
   
-  trainIndex <- createDataPartition(combinedData[,labelName], p=trainPercent, list=FALSE, times=1)
+  trainIndex <- createDataPartition(combinedData[,"clusterlabel"], p=trainPercent, list=FALSE, times=1)
   trainData <- combinedData[trainIndex,]
   testData <- combinedData[-trainIndex,]
   
@@ -75,22 +83,22 @@ makeModelDataSet <- function(dataSet, labelledDataSet, docTermMat, labelName, sp
   print(paste("test percent", testPercent))
   print(paste("valid percent", valPercent))
   
-  print(length(testData[,labelName]))
+  print(length(testData[,"clusterlabel"]))
   
   # make validation data by drawing from all data.
-  valIndex <- createDataPartition(combinedData[,labelName], p=valPercent, list=FALSE, times=1)
+  valIndex <- createDataPartition(combinedData[,"clusterlabel"], p=valPercent, list=FALSE, times=1)
   
   valData <- combinedData[valIndex,]
   
-  trainProps <- trainData %>% group_by(trainData[,labelName]) %>% count()
+  trainProps <- trainData %>% group_by(trainData[,"clusterlabel"]) %>% count()
   colnames(trainProps) <- c(labelName,"n")
   
-  valProps <- valData %>% group_by(valData[,labelName]) %>% count()
+  valProps <- valData %>% group_by(valData[,"clusterlabel"]) %>% count()
   colnames(valProps) <- c(labelName,"n")
   
   
-  testProps <- testData %>% group_by(testData[,labelName]) %>% count()
-  colnames(testProps) <- c(labelName,"n")
+  testProps <- testData %>% group_by(testData[,"clusterlabel"]) %>% count()
+  colnames(testProps) <- c("clusterlabel","n")
   
   
   trainProps$pc <- trainProps$n / nrow(trainProps)
@@ -99,6 +107,7 @@ makeModelDataSet <- function(dataSet, labelledDataSet, docTermMat, labelName, sp
   testProps$pc <- testProps$n / nrow(testProps)
   
   list(
+    partitionLabelName="clusterlabel",
     trainData=trainData,
     valData=valData,
     testData=testData,

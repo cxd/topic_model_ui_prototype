@@ -201,7 +201,7 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
     
     ## Step 1. Define partitions for training and testing.
     ## Report sizes.
-    modelData <- makeModelDataSet(dataSet, labelledData, docTermMat, labelName, splits=c(trainP, validP, testP))
+    modelData <- makeModelDataSet(labelledData, docTermMat, labelName, splits=c(trainP, validP, testP))
     
     result$modelData <- modelData
     result$docTermMat <- docTermMat
