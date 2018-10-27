@@ -273,13 +273,13 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
   
   output$historyPlot <- renderPlot({
     validate(need(trainResult$history, message=FALSE))
-    plot(history)
+    plot(trainResult$history)
   })
   
   output$historyTable <- renderDataTable({
     validate(need(trainResult$history, message=FALSE))
-    t1 <- trainingHistory(history)
-    t2 <- validationHistory(history)
+    t1 <- trainingHistory(trainResult$history)
+    t2 <- validationHistory(trainResult$history)
     t <- inner_join(t1,t2, by=c("epoch"))
     return (t)
   }, options=list(
