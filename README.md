@@ -173,6 +173,17 @@ The prototype is written in the R Shiny framework, and executes via the "runApp(
 
 The dependencies for the project may be installed via the "dependencies.R" script. When installing keras ensure to first install the tensorflow environment.
 
+## Running in Docker.
+
+A docker image of the prototype is available from the repository
+
+cxdau/topicmodelprototype
+
+For modest data set example in the "data/ABC_news_example" it requires a minimum RAM allocation of 8Gb to run the tensorflow modelling.
+
+The data set has roughly 10000 lines with just over 10000 terms in the vocabulary.
+The number of topics will also affect the memory allocation when modelling as well as using the network capability. It is possible to use the topic modelling without the neural network, this requires much less memory overall, potentially 4Gb RAM would be sufficient for that use case.
+In docker if the process exceeds available memory it is killed and the web UI displays a "grey" shadow over the main page. The amount of memory required is dependent on the data set in use and docker can be configured as per needs of the data set.
 
 
 

@@ -26,7 +26,7 @@ labelName <- "label"
 ## Step 1. Define partitions for training and testing.
 ## Report sizes.
 modelData <- makeModelDataSet(labelledData, docTermMat, labelName, splits=c(0.7, 0.15, 0.15))
-
+labelName = modelData$partitionLabelName
 names(modelData)
 
 trainData <- getTrainAndTestSet(modelData)
