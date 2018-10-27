@@ -7,4 +7,7 @@ if [ -z "$1" ]
 fi
 
 
-R -i "source('app.R');runApp(host='0.0.0.0',port=$PORT);"
+
+echo "source('app.R');runApp(host='0.0.0.0',port=$PORT);" > run.R
+R --no-save --file=run.R
+

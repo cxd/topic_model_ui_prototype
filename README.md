@@ -179,11 +179,26 @@ A docker image of the prototype is available from the repository
 
 cxdau/topicmodelprototype
 
+The image can be run using the command.
+
+```
+
+docker run --name topicmodelprototype -w /topicmodeltools/topic_model_ui_prototype-master --publish 5000:5000 --publish 5001:5001 cxdau/topicmodelprototype ./runapp.sh
+
+```
+
+Note that given this is running as a standalone shiny application the process is single threaded and is meant to operate as a tool run for a single user to experiment with. The R console in the docker instance executes as an interactive mode so that the user can also review the console output.
+
+![console view](docs/images/consoleoutput.png)
+
+
 For modest data set example in the "data/ABC_news_example" it requires a minimum RAM allocation of 8Gb to run the tensorflow modelling.
 
 The data set has roughly 10000 lines with just over 10000 terms in the vocabulary.
-The number of topics will also affect the memory allocation when modelling as well as using the network capability. It is possible to use the topic modelling without the neural network, this requires much less memory overall, potentially 4Gb RAM would be sufficient for that use case. However when running the "Assess Number of Topics" the amount of memory may also need to be increased.
-In docker if the process exceeds available memory it is killed and the web UI displays a "grey" shadow over the main page. The amount of memory required is dependent on the data set in use and docker can be configured as per needs of the data set.
+The number of topics will also affect the memory allocation when modelling as well as using the network capability. It is possible to use the topic modelling without the neural network, this requires much less memory overall, potentially 4Gb RAM would be sufficient for that use case. However when running the "Assess Number of Topics" the amount of memory may also need to be increased. 
+In docker if the process exceeds available memory it is killed and the web UI displays a "grey" shadow over the main page. The amount of memory required is dependent on the data set in use and docker can be configured as per needs of the data set. Use the "docker stats" command to monitor the memory usage when processing your data set.
+
+
 
 
 

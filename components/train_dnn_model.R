@@ -226,6 +226,7 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
     print("Train model")
     ## Step 3. Train the model.
     
+    withTensorBoardFlag <- interactive()
     
     history <- trainModel(model, 
                           trainData$train_x, 
@@ -234,7 +235,7 @@ train_model_srv <- function(input, output, session, loadFileResult, modelResult,
                           trainData$val_y, 
                           numEpochs=epochs, 
                           logdir="logs/run", 
-                          withTensorBoard=TRUE, 
+                          withTensorBoard=withTensorBoardFlag, 
                           port=listenPort,
                           callbackSet=list(aggregator))
     
