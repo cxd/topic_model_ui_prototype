@@ -189,9 +189,6 @@ docker run --name topicmodelprototype -w /topicmodeltools/topic_model_ui_prototy
 
 Note that given this is running as a standalone shiny application the process is single threaded and is meant to operate as a tool run for a single user to experiment with. The R console in the docker instance executes as an interactive mode so that the user can also review the console output.
 
-![console view](docs/images/consoleoutput.png)
-
-
 For modest data set example in the "data/ABC_news_example" it requires a minimum RAM allocation of 8Gb to run the tensorflow modelling.
 
 The data set has roughly 10000 lines with just over 10000 terms in the vocabulary.
