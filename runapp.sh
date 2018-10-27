@@ -7,4 +7,4 @@ if [ -z "$1" ]
 fi
 
 
-R -e "source('app.R');runApp(host='0.0.0.0',port=$PORT);"
+R -i "source('app.R');runApp(host='0.0.0.0',port=$PORT);"
