@@ -187,7 +187,7 @@ The image can be run using the command.
 
 ```
 
-docker run --name topicmodelprototype -w /topicmodeltools/topic_model_ui_prototype-master --publish 5000:5000 --publish 5001:5001 cxdau/topicmodelprototype ./runapp.sh
+docker run --name topicmodelprototype -w /topicmodeltools/topic_model_ui_prototype-master --publish 5000:5000 --publish 5001:5001 cxdau/topicmodelprototype:1.0.0 ./runapp.sh
 
 ```
 
