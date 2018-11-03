@@ -179,6 +179,10 @@ A docker image of the prototype is available from the repository
 
 cxdau/topicmodelprototype
 
+```
+docker pull cxdau/topicmodelprototype:1.0.0
+```
+
 The image can be run using the command.
 
 ```
